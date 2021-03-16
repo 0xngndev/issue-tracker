@@ -1,25 +1,18 @@
-const { ApolloServer, gql } = require("apollo-server");
+const express = require("express");
+const typeDefs = require("./graphql/typeDefs");
+const resolvers = require("./graphql/resolvers/");
+const connectToDB = require("./db");
+const { ApolloServer } = require("apollo-server-express");
+const server = new ApolloServer({ typeDefs, resolvers });
+require("dotenv").config();
 
-// The GraphQL schema
-const typeDefs = gql`
-  type Query {
-    "A simple type for getting started!"
-    hello: String
-  }
-`;
+connectToDB();
 
-// A map of functions which return data for the schema.
-const resolvers = {
-  Query: {
-    hello: () => "world",
-  },
-};
+const app = express();
+server.applyMiddleware({ app });
 
-const server = new ApolloServer({
-  typeDefs,
-  resolvers,
-});
-
-server.listen().then(({ url }) => {
-  console.log(`🚀 Server ready at ${url}`);
-});
+app.listen({ port: process.env.PORT }, () =>
+  console.log(
+    `🚀 Server ready at http://localhost:${process.env.PORT}${server.graphqlPath}`
+  )
+);
